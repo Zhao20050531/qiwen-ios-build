@@ -19,7 +19,7 @@ jobs:
             git clone --depth 1 --branch master https://gitee.com/zxt0531/qiwen-remote-config.git gitee-source
             cd gitee-source
             git rev-parse HEAD
-            unzip -q ios-source-ipa.zip
+            python3 -c "import zipfile; zipfile.ZipFile('ios-source-ipa.zip').extractall('.')"
             bash QiwenIOS/scripts/build-unsigned.sh
           } 2>&1 | tee ios-build.log
       - name: Upload unsigned IPA and app bundle
