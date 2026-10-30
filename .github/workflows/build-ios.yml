@@ -1,0 +1,40 @@
+name: Build Qiwen iOS IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/build-ios.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Compile Gitee source and package unsigned device IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            git clone --depth 1 --branch master https://gitee.com/zxt0531/qiwen-remote-config.git gitee-source
+            cd gitee-source
+            git rev-parse HEAD
+            unzip -q ios-source-ipa.zip
+            bash QiwenIOS/scripts/build-unsigned.sh
+          } 2>&1 | tee ios-build.log
+      - name: Upload unsigned IPA and app bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: QiwenIOS-unsigned-IPA
+          path: gitee-source/QiwenIOS/build/artifacts/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-log
+          path: ios-build.log
+          if-no-files-found: warn
+          retention-days: 7
